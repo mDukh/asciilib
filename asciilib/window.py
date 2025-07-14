@@ -90,23 +90,13 @@ class Window:
 
 		for word in value.split(' '):
 
-			#print(word)
-			'''
-			if word == '~INDENT~':
-				char_pos[0] = indent_level-1
-				char_pos[1] += 2
-				lines.append(line)
-				lines.append('')
-				line = ' '*indent_level
-			'''
-
-			
 			if char_pos[0] + len(word) + 1 > x_restraint:
 				char_pos[0] = 0
 				char_pos[1] += 1
 				lines.append(line)
 				line = ''
 				line_count += 1
+				
 			line += word
 			line += ' '
 			char_pos[0] += len(word) + 1

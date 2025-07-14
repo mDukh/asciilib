@@ -44,6 +44,10 @@ STYLE_ANSI = {
 	'underlined' : 4,
 	'invert' : 7
 }
+
+
+
+
 def _style_formatted(styles) -> str:
 	final = ''
 	for style in styles:
@@ -60,6 +64,7 @@ ESC = '\033'
 
 class Attribute:
 	def __init__(self, full_fidelity: bool, styles: list[str], *args):
+
 		'''
 		full fidelity (RGB):
 			args -> (r, g, b), (br, bg, bb)
@@ -88,21 +93,40 @@ class Attribute:
 			self.fg_color = args[0]
 			self.bg_color = args[1]
 
+
+
+
+
+
+
+	def _get_color_code(self, is_foreground: bool) -> str:
+		rgb = self.fg_rgb if is_foreground else self.bg_rgb
+		color = self.fg_color if is_foreground else self.bg_color
+		ansi_map = FG_ANSI if is_foreground else BG_ANSI
+		default_code = '39;' if is_foreground else '49;'
+		rgb_prefix = '38;2;' if is_foreground else '48;2;'
+
+		# checking for null values (returns respective default value if so)
+		if self.full_fidelity:
+			if rgb is None:
+				return default_code
+		else:
+			if color is None:
+				return default_code
+
+		# format and return if no null
+		if self.full_fidelity:
+			return f'{rgb_prefix}{round(rgb[0])};{round(rgb[1])};{round(rgb[2])};'
+
+		return str(ansi_map[color]) + ';'
+
+
+
 	def _get_format(self) -> str:
 		styles = _style_formatted(self.styles)
 
-		foreground = ''
-		if (self.full_fidelity and not self.fg_rgb is None) or (not self.full_fidelity and not self.fg_color is None):
-			foreground = str(FG_ANSI[self.fg_color]) + ';' if not self.full_fidelity else f'38;2;{round(self.fg_rgb[0])};{round(self.fg_rgb[1])};{round(self.fg_rgb[2])};'
-		else:
-			foreground = '39;'
-
-
-		background = ''
-		if (self.full_fidelity and not self.bg_rgb is None) or (not self.full_fidelity and not self.bg_color is None):
-			background = str(BG_ANSI[self.bg_color]) if not self.full_fidelity else f'48;2;{round(self.bg_rgb[0])};{round(self.bg_rgb[1])};{round(self.bg_rgb[2])}'
-		else:
-			background = '49'
+		foreground = self._get_color_code(is_foreground=True)
+		background = self._get_color_code(is_foreground=False)
 
 		return f'{ESC}[{styles}{foreground}{background}m'
 
